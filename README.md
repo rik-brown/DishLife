@@ -1,5 +1,5 @@
 # NOC_3_Steering_Forces
-Kadenze Nature of Code Assignment 3: Steering Forces
+*Kadenze Nature of Code Assignment 3: Steering Forces*
 
 Gallery Participation (x 1) 20.00%
 Commenting Requirement: Student must post 1 new comment in the course gallery for Assignment 3: Steering Forces.

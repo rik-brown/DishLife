@@ -1,10 +1,11 @@
-/*
- * Step 1 - a very stripped down version
+/* Kadenze
+ * Nature of Code
+ * Assignment 3: Steering Forces
+ * by Richard Brown
  */
 
 var colony; // A colony object
-var colonySize = 2; // Number of cells in the colony
-var debug = false; // Make true to activate debug functionality
+var colonySize = 2; // Initial number of cells in the colony
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -20,7 +21,6 @@ function draw() {
 }
 
 function populateColony() {
-  background(0); // Refresh the background
   colony.cells = []; // Empty the arraylist (or make sure it is empty)
   colony = new Colony(colonySize); // Populate the colony
 }

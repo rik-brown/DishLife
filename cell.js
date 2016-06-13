@@ -6,26 +6,26 @@ function Cell(pos, vel, cellStartSize_) {
 
   // GROWTH & REPRODUCTION
   this.age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0.
-  this.lifespan = random (1500, 2000);
-  this.fertility = random (0.2, 0.4);
-  this.spawnCount = random (2, 5);
+  this.lifespan = random (1000, 1500); // How long will the cell live?
+  this.fertility = random (0.3, 0.5); // When will the cell become fertile?
+  this.spawnCount = int(random (1, 5)); // How many times can the cell produce offspring?
 
   // SIZE AND SHAPE
   this.cellStartSize = cellStartSize_;
   this.cellEndSize = 0.5;
   this.r = this.cellStartSize; // Initial value for radius
-  this.size = map(this.r, this.cellStartSize, this.cellEndSize, 1, 0);
-  this.flatness = random (1.0, 1.3);
-  this.growth = (this.cellStartSize-this.cellEndSize)/this.lifespan;
+  this.size = map(this.r, this.cellStartSize, this.cellEndSize, 1, 0); // Size is a measure of progress from starting to final radius
+  this.flatness = random (1.0, 1.3); // Flatness makes the circle into an ellipse
+  this.growth = (this.cellStartSize-this.cellEndSize)/this.lifespan; // Growth-rate is calculated from size & expected lifespan
 
   // MOVEMENT
   this.position = pos; //cell has position
-  this.velocity = vel; //cell has unique basic velocity component
-  this.acceleration = createVector(0,0);
+  this.velocity = vel; //cell has velocity
+  this.acceleration = createVector(0,0); // acceleration starts at zero
   this.maxspeed = 4;
   this.maxforce = 0.3;
-  //this.target = createVector(mouseX,mouseY);
-  this.target = createVector(width/2, height/2);
+  //this.target = createVector(mouseX,mouseY); // colony moves towards the mouse
+  this.target = createVector(width/2, height/2); // colony moves towards the center of the canvas
 
 
   this.run = function() {
@@ -35,13 +35,26 @@ function Cell(pos, vel, cellStartSize_) {
     this.updateFertility();
     this.checkBoundaryWraparound();
     this.display();
-    if (debug) {this.cellDebugger(); }
   }
 
   this.live = function() {
     this.age += 1;
     this.maturity = map(this.age, 0, this.lifespan, 0, 1);
   }
+
+  this.seek = function(target) {
+      var desired = p5.Vector.sub(this.target, this.position);
+
+      // Normalize desired and scale to maximum speed
+      desired.normalize();
+      desired.mult(this.maxspeed);
+
+      // Steering formula
+      var steering = p5.Vector.sub(desired, this.velocity);
+      steering.limit(this.maxforce);
+      return(steering);
+    }
+
 
   this.applyForce = function(force) {
       this.acceleration.add(force);
@@ -114,6 +127,7 @@ function Cell(pos, vel, cellStartSize_) {
     if (this.spawnCount == 0) {this.fertility = 0;} // Once spawnCount has counted down to zero, the cell will spawn no more
   }
 
+
   this.checkBoundaryWraparound = function() {
     if (this.position.x > width + this.r*this.flatness) {
       this.position.x = -this.r*this.flatness;
@@ -125,19 +139,6 @@ function Cell(pos, vel, cellStartSize_) {
       this.position.y = height + this.r*this.flatness;
     }
   }
-  this.seek = function(target) {
-    var desired = p5.Vector.sub(target, this.position);
-
-    // Normalize desired and scale to maximum speed
-    desired.normalize();
-    desired.mult(this.maxspeed);
-
-    // Steering formula
-    var steering = p5.Vector.sub(desired, this.velocity);
-    steering.limit(this.maxforce);
-    return(steering);
-  }
-
 
   // Death
   this.dead = function() {
@@ -147,7 +148,7 @@ function Cell(pos, vel, cellStartSize_) {
     else {return false; }
   };
 
-
+  // Display the cell
   this.display = function() {
     noStroke();
     fill(255);
@@ -200,31 +201,6 @@ function Cell(pos, vel, cellStartSize_) {
     //Reset fertility counter
     this.fertility *= this.fertility;
     other.fertility *= other.fertility;
-  }
-
-  this.cellDebugger = function() { // Displays cell parameters as text (for debug only)
-    var rowHeight = 15;
-    fill(0);
-    textSize(rowHeight);
-    // RADIUS
-    //text("r:" + this.r, this.position.x, this.position.y + rowHeight*1);
-    //text("cellStartSize:" + this.cellStartSize, this.position.x, this.position.y + rowHeight*0);
-    //text("cellEndSize:" + this.cellEndSize, this.position.x, this.position.y + rowHeight*3);
-
-    // GROWTH
-    text("size:" + this.size, this.position.x, this.position.y + rowHeight*2);
-    //text("growth:" + this.growth, this.position.x, this.position.y + rowHeight*5);
-    text("maturity:" + this.maturity, this.position.x, this.position.y + rowHeight*3);
-    text("lifespan:" + this.lifespan, this.position.x, this.position.y + rowHeight*4);
-    //text("age:" + this.age, this.position.x, this.position.y + rowHeight*3);
-    text("fertility:" + this.fertility, this.position.x, this.position.y + rowHeight*5);
-    //text("fertile:" + this.fertile, this.position.x, this.position.y + rowHeight*3);
-    //text("spawnCount:" + this.spawnCount, this.position.x, this.position.y + rowHeight*4);
-
-    // MOVEMENT
-    //text("vel.x:" + this.velocity.x, this.position.x, this.position.y + rowHeight*4);
-    //text("vel.y:" + this.velocity.y, this.position.x, this.position.y + rowHeight*5);
-    //text("vel.heading():" + this.velocity.heading(), this.position.x, this.position.y + rowHeight*3);
   }
 
 }

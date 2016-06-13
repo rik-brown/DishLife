@@ -29,12 +29,11 @@ function Cell(pos, vel, cellStartSize_) {
 
 
   this.run = function() {
-    this.live();
-    this.updatePosition();
-    this.updateSize();
-    this.updateFertility();
-    this.checkBoundaryWraparound();
-    this.display();
+    this.live();  // Cell lives
+    this.updatePosition(); // Cell moves
+    this.updateSize(); // Cell grows
+    this.updateFertility(); // Cell matures
+    this.display(); // Cell is displayed
   }
 
   this.live = function() {
@@ -117,34 +116,23 @@ function Cell(pos, vel, cellStartSize_) {
     this.acceleration.mult(0);
   }
 
-  this.updateSize = function() { //Alternatively: cell is always growing, so include this in 'living' but allow for growth=0 ??
-    this.r -= this.growth; // Cell can only shrink for now
+  this.updateSize = function() {
+    this.r -= this.growth;
     this.size = map(this.r, this.cellStartSize, this.cellEndSize, 1, 0);
   }
 
   this.updateFertility = function() {
-    if (this.maturity >= this.fertility) {this.fertile = true; } else {this.fertile = false; } // A cell is fertile if maturity is within limit (a % of lifespan)
+    if (this.maturity >= this.fertility) {this.fertile = true; } else {this.fertile = false; } // A cell is fertile if maturity is above fertility threhold
     if (this.spawnCount == 0) {this.fertility = 0;} // Once spawnCount has counted down to zero, the cell will spawn no more
   }
 
-
-  this.checkBoundaryWraparound = function() {
-    if (this.position.x > width + this.r*this.flatness) {
-      this.position.x = -this.r*this.flatness;
-    } else if (this.position.x < -this.r*this.flatness) {
-      this.position.x = width + this.r*this.flatness;
-    } else if (this.position.y > height + this.r*this.flatness) {
-      this.position.y = -this.r*this.flatness;
-    } else if (this.position.y < -this.r*this.flatness) {
-      this.position.y = height + this.r*this.flatness;
-    }
-  }
 
   // Death
   this.dead = function() {
     if (this.size <= 0) {return true;} // Size = 0 when r = cellEndSize
     if (this.age >= this.lifespan) {return true;} // Death by old age (regardless of size, which may remain constant)
-    if (this.position.x > width + this.r*this.flatness || this.position.x < -this.r*this.flatness || this.position.y > height + this.r*this.flatness || this.position.y < -this.r*this.flatness) {return true;} // Death if move beyond canvas boundary
+    // Death if move beyond canvas boundary:
+    if (this.position.x > width + this.r*this.flatness || this.position.x < -this.r*this.flatness || this.position.y > height + this.r*this.flatness || this.position.y < -this.r*this.flatness) {return true;}
     else {return false; }
   };
 

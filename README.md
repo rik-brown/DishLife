@@ -30,3 +30,10 @@ The object incorporates an applyForce() function.
 
 Steering 20.00%
 The object uses Reynolds’ steering formula: steering = desired - velocity.
+
+IDEA:
+The objects are 'cells' that change shape over time (eventually dying, when they get too small)
+They become 'fertile' when the size falls beneath a certain threshold
+They become 'infertile' when they have spawned a new cell
+Fertile cells are attracted towards other fertile cells, but will move away from unfertile cells
+New cells are born infertile

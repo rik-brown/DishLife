@@ -7,7 +7,7 @@ function Cell(pos, vel, cellStartSize_) {
   // GROWTH & REPRODUCTION
   this.age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0.
   this.lifespan = p.lifespan * random (0.8, 1.2);
-  this.fertility = p.fertility * 0.01 * random (0.8, 1.2); 
+  this.fertility = p.fertility * 0.01 * random (0.8, 1.2);
   this.spawnCount = int(random (1, 5)); // How many times can the cell produce offspring?
 
   // SIZE AND SHAPE
@@ -22,8 +22,8 @@ function Cell(pos, vel, cellStartSize_) {
   this.position = pos; //cell has position
   this.velocity = vel; //cell has velocity
   this.acceleration = createVector(0,0); // acceleration starts at zero
-  this.maxspeed = 4;
-  this.maxforce = 0.3;
+  this.maxspeed = p.maxspeed;
+  this.maxforce = p.maxforce;
   //this.target = createVector(mouseX,mouseY); // colony moves towards the mouse
   this.target = createVector(width/2, height/2); // colony moves towards the center of the canvas
 
@@ -63,8 +63,8 @@ function Cell(pos, vel, cellStartSize_) {
     var separateForce = this.separate(cells);
     var seekForce = this.seek(this.target);
 
-    separateForce.mult(2);
-    seekForce.mult(1);
+    separateForce.mult(2); // Could be added to GUI
+    seekForce.mult(1); // Could be added to GUI
 
     this.applyForce(separateForce);
     this.applyForce(seekForce);
@@ -80,10 +80,12 @@ function Cell(pos, vel, cellStartSize_) {
     // For every cells in the system, check if it's too close
     for (var i = 0; i < cells.length; i++) {
       var d = p5.Vector.dist(this.position, cells[i].position);
-      if (this.fertile && cells[i].fertile) {desiredseparation = 0;}
-      if (!this.fertile && cells[i].fertile) {desiredseparation = this.r + cells[i].r;}
-      if (this.fertile && !cells[i].fertile) {desiredseparation = this.r + cells[i].r;}
-      if (!this.fertile && !cells[i].fertile) {desiredseparation = (this.r + cells[i].r)*1.6;}
+      // if (this.fertile && cells[i].fertile) {desiredseparation = 0;}
+      // if (!this.fertile && cells[i].fertile || this.fertile && !cells[i].fertile) {desiredseparation = this.r + cells[i].r;}
+      // if (!this.fertile && !cells[i].fertile) {desiredseparation = (this.r + cells[i].r)*1.6;}
+      if (this.fertile && cells[i].fertile) {desiredseparation = p.sepFF;}
+      if (!this.fertile && cells[i].fertile || this.fertile && !cells[i].fertile) {desiredseparation = p.sepFI}
+      if (!this.fertile && !cells[i].fertile) {desiredseparation = p.sepII;}
       // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
       if ((d > 0) && (d < desiredseparation)) {
         // Calculate vector pointing away from neighbor

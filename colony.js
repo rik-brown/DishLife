@@ -5,13 +5,11 @@ function Colony(numCells) {
   // Start with an empty array for all cells
   this.cells = [];
 
-  var colonyMaxSize = 200; // The maximum number of cells allowed in the colony
-
   // Create initial population of cells
   for (var i = 0; i < numCells; i++) {
     var pos = createVector(random(width), random(height)); // Cells have random position
     var vel = createVector(0,0); // Initial velocity vector is 0
-    var cellStartSize = random (30, 50); // Initial size varies somewhat
+    var cellStartSize = p.cellStartSize * random (0.8, 1.2); // Initial size varies somewhat
     this.cells.push(new Cell(pos, vel, cellStartSize)); // Add new Cell to the array
   }
 
@@ -33,7 +31,7 @@ function Colony(numCells) {
       if (c.dead()) {this.cells.splice(i, 1);} // If cell has died, remove it from the array
 
       // Iteration to check collision between current cell(i) and the rest
-      if (this.cells.length <= colonyMaxSize) { // Don't check for collisons if there are too many cells (wait until some die off)
+      if (this.cells.length <= p.colonyMaxSize) { // Don't check for collisons if there are too many cells (wait until some die off)
         if (c.fertile) { //Only do the check on cells that are fertile
           for (var others = i - 1; others >= 0; others--) { // Since main iteration (i) goes backwards, this one needs to too
             var other = this.cells[others]; // Get the other cells, one by one
@@ -45,8 +43,8 @@ function Colony(numCells) {
     }
 
     // If there are too many cells, remove some by 'culling'
-    if (this.cells.length > colonyMaxSize) {
-      this.cull(colonyMaxSize);
+    if (this.cells.length > p.colonyMaxSize) {
+      this.cull(p.colonyMaxSize);
     }
   }
 

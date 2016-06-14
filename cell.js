@@ -8,7 +8,7 @@ function Cell(pos, vel, cellStartSize_) {
   this.age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0.
   this.lifespan = p.lifespan * random (0.8, 1.2);
   this.fertility = p.fertility * 0.01 * random (0.8, 1.2);
-  this.spawnCount = int(random (1, 5)); // How many times can the cell produce offspring?
+  this.spawnCount = p.spawnCount; // How many times can the cell produce offspring?
 
   // SIZE AND SHAPE
   this.cellStartSize = cellStartSize_;
@@ -33,7 +33,7 @@ function Cell(pos, vel, cellStartSize_) {
     this.updatePosition(); // Cell moves
     this.updateSize(); // Cell grows
     this.updateFertility(); // Cell matures
-    this.display(); // Cell is displayed
+    if (p.displayPoint) {this.displayPoint();} else {this.display();} // Cell is displayed
   }
 
   this.live = function() {
@@ -73,11 +73,10 @@ function Cell(pos, vel, cellStartSize_) {
 // Separation
   // Method checks for nearby vehicles and steers away
   this.separate = function(cells) {
-    //var desiredseparation = 20;
 
     var sum = createVector();
     var count = 0;
-    // For every cells in the system, check if it's too close
+    // For every cell in the system, check if it's too close
     for (var i = 0; i < cells.length; i++) {
       var d = p5.Vector.dist(this.position, cells[i].position);
       // if (this.fertile && cells[i].fertile) {desiredseparation = 0;}
@@ -138,7 +137,7 @@ function Cell(pos, vel, cellStartSize_) {
     else {return false; }
   };
 
-  // Display the cell
+  // Display the cell using ellipse
   this.display = function() {
     noStroke();
     fill(255);
@@ -161,13 +160,18 @@ function Cell(pos, vel, cellStartSize_) {
     pop();
   }
 
+  // Display the cell using ellipse
+  this.displayPoint = function() {
+    noFill();
+    if (this.fertile) {stroke(255, 0, 0, 15);} else {stroke(255, 15);}
+    point(this.position.x, this.position.y);
+  }
+
   this.checkCollision = function(other) { // Method receives a Cell object 'other' to get the required info about the collidee
     var distVect = p5.Vector.sub(other.position, this.position); // Static vector to get distance between the cell & other
     var distMag = distVect.mag(); // calculate magnitude of the vector separating the balls
     if (distMag < (this.r + other.r)) {this.conception(other, distVect);} // Spawn a new cell
   }
-
-
 
   this.conception = function(other, distVect) {
     // Decrease spawn counters.

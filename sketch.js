@@ -13,17 +13,18 @@ function setup() {
   initGUI();
   createCanvas(windowWidth, windowHeight);
   ellipseMode(RADIUS);
-  background(128);
+  background(p.bkgcol);
   colony = new Colony(p.colonySize); // Populate the colony
 }
 
 function draw() {
-  background(128);
+  if (!p.displayPoint) {background(p.bkgcol);}
   colony.run(); // Run the colony
   if (colony.cells.length === 0) {populateColony(); } // If all the cells have died, populate a new colony
 }
 
 function populateColony() {
+  background(p.bkgcol);
   colony.cells = []; // Empty the arraylist (or make sure it is empty)
   colony = new Colony(p.colonySize); // Populate the colony
 }
@@ -34,11 +35,14 @@ var Parameters = function () { //These are the initial values, not the randomise
   this.cellStartSize = 20;
   this.lifespan = 1000; // How long will the cell live?
   this.fertility = 30; // When will the cell become fertile?
+  this.spawnCount = 1; // How many times can the cell produce offspring?
   this.maxspeed = 4;
   this.maxforce = 0.3;
   this.sepFF = 0; // Separation for Fertile && Fertile
   this.sepFI = 10; // Separation for Fertile && Infertile
   this.sepII = 20; // Separation for Infertile && Infertile
+  this.displayPoint = false;
+  this.bkgcol = 0;
 }
 
 var initGUI = function () {
@@ -52,6 +56,8 @@ var initGUI = function () {
     	controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'fertility', 0, 100).step(1).name('Fertility').listen();
       controller.onChange(function(value) {populateColony(); });
+    var controller = gui.add(p, 'spawnCount', 0, 10).step(1).name('Max. # Children').listen();
+      controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'maxspeed', 1, 10).step(1).name('Max. Speed').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'maxforce', 0.1, 1.0).name('Max. Force').listen();
@@ -61,5 +67,7 @@ var initGUI = function () {
     var controller = gui.add(p, 'sepFI', 0, 50).name('Sep. RedWhite').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'sepII', 0, 50).name('Sep. WhiteWhite').listen();
+      controller.onChange(function(value) {populateColony(); });
+    var controller = gui.add(p, 'displayPoint').name('Point').listen();
       controller.onChange(function(value) {populateColony(); });
 }

@@ -6,8 +6,8 @@ function Cell(pos, vel, cellStartSize_) {
 
   // GROWTH & REPRODUCTION
   this.age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0.
-  this.lifespan = random (1000, 1500); // How long will the cell live?
-  this.fertility = random (0.3, 0.5); // When will the cell become fertile?
+  this.lifespan = p.lifespan * random (0.8, 1.2);
+  this.fertility = p.fertility * 0.01 * random (0.8, 1.2); 
   this.spawnCount = int(random (1, 5)); // How many times can the cell produce offspring?
 
   // SIZE AND SHAPE

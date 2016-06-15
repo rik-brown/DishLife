@@ -28,13 +28,23 @@ function Cell(pos, vel, cellStartSize_) {
   this.target = createVector(width/2, height/2); // colony moves towards the center of the canvas
 
 
-  this.run = function() {
+
+  this.run = function(i) {
+    if (p.movingTarg) {this.updateMovingTarget();}
     this.live();  // Cell lives
     this.updatePosition(); // Cell moves
     this.updateSize(); // Cell grows
     this.updateFertility(); // Cell matures
-    if (p.displayPoint) {this.displayPoint();} else {this.display();} // Cell is displayed
+    if (p.displayPoint) {this.displayPoint(i);}
+    if (p.displayText) {this.displayText(i);}
+    if (!p.displayPoint && !p.displayText) {this.display(i);} // Cell is displayed
     //this.cellDebugger();
+  }
+
+  this.updateMovingTarget = function() {
+    this.movingTargetX = colony.cells[0].position.x;
+    this.movingTargetY = colony.cells[0].position.y;
+    this.movingTarget = createVector(this.movingTargetX, this.movingTargetY); // The target is always 'cell[0]'
   }
 
   this.live = function() {
@@ -43,7 +53,7 @@ function Cell(pos, vel, cellStartSize_) {
   }
 
   this.seek = function(target) {
-      var desired = p5.Vector.sub(this.target, this.position);
+      var desired = p5.Vector.sub(target, this.position);
 
       // Normalize desired and scale to maximum speed
       desired.normalize();
@@ -62,7 +72,7 @@ function Cell(pos, vel, cellStartSize_) {
 
   this.applyBehaviors = function(cells) {
     var separateForce = this.separate(cells);
-    var seekForce = this.seek(this.target);
+    if (!p.movingTarg) {var seekForce = this.seek(this.target);}  else {var seekForce = this.seek(this.movingTarget);}
 
     separateForce.mult(p.separateWeight);
     seekForce.mult(p.seekWeight);
@@ -139,7 +149,7 @@ function Cell(pos, vel, cellStartSize_) {
   };
 
   // Display the cell using ellipse
-  this.display = function() {
+  this.display = function(i) {
     noStroke();
     fill(255);
     var angle = this.velocity.heading();
@@ -154,19 +164,29 @@ function Cell(pos, vel, cellStartSize_) {
       fill(255); ellipse(0, 0, this.r, this.r * this.flatness); // White ellipse at full size of cell
       fill(255, 0, 0); ellipse(0, 0, this.r * (1-this.maturity), this.r * (1-this.maturity) * this.flatness); // Red ellipse which grows from center
       }
-    strokeWeight(1);
-    stroke(0);
-    noFill();
-    ellipse(0, 0, this.r * (1-this.fertility), this.r * (1-this.fertility) * this.flatness); // Fixed ellipse indicating 'fertility threshold'
+    if (this.spawnCount >0) {
+      strokeWeight(1);
+      stroke(0);
+      noFill();
+      ellipse(0, 0, this.r * (1-this.fertility), this.r * (1-this.fertility) * this.flatness); // Fixed ellipse indicating 'fertility threshold'
+    }
     pop();
   }
 
-  // Display the cell using ellipse
-  this.displayPoint = function() {
+  // Display the cell using points
+  this.displayPoint = function(i) {
     noFill();
-    strokeWeight(3);
-    if (this.fertile) {stroke(255, 0, 0, 40);} else {stroke(255, 40);}
+    strokeWeight(5);
+    if (this.fertile) {stroke(255, 0, 0, 128);} else {stroke(255, 128);}
     point(this.position.x, this.position.y);
+  }
+
+  // Display the cell using text
+  this.displayText = function(i) {
+    noFill();
+    strokeWeight(1);
+    textSize(this.r);
+    if (this.fertile) {fill(255, 0, 0); text("Friend#" + i, this.position.x, this.position.y);} else {fill(255); text("Foe#" + i, this.position.x, this.position.y);}
   }
 
   this.checkCollision = function(other) { // Method receives a Cell object 'other' to get the required info about the collidee

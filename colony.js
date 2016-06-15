@@ -26,8 +26,8 @@ function Colony(numCells) {
     for (var i = this.cells.length - 1; i >= 0; i--) {
 
       var c = this.cells[i]; // Get one cell at a time
+      c.run(i); // Run it (grow, move, spawn, check position vs boundaries etc.)
       c.applyBehaviors(this.cells);
-      c.run(); // Run it (grow, move, spawn, check position vs boundaries etc.)
       if (c.dead()) {this.cells.splice(i, 1);} // If cell has died, remove it from the array
 
       // Iteration to check collision between current cell(i) and the rest

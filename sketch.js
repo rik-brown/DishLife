@@ -43,7 +43,7 @@ function populateColony() {
 var Parameters = function () { //These are the initial values, not the randomised ones
   this.colonySize = int(random(2,10)); // Max number of cells in the colony
   this.colonyMaxSize = 200; // The maximum number of cells allowed in the colony
-  this.cellStartSize = 80;
+  this.cellStartSize = 80; // Starting radius
   this.lifespan = 1000; // How long will the cell live?
   this.fertility = 80; // When will the cell become fertile?
   this.spawnCount = 2; // How many times can the cell produce offspring?
@@ -52,11 +52,11 @@ var Parameters = function () { //These are the initial values, not the randomise
   this.sepFF = 0; // Separation for Fertile && Fertile
   this.sepFI = 100; // Separation for Fertile && Infertile
   this.sepII = 200; // Separation for Infertile && Infertile
-  this.displayPoint = false;
-  this.bkgcol = 128;
-  this.seekWeight = 0.5;
-  this.separateWeight = 2;
-  this.growthFactor = 1.3;
+  this.displayPoint = false; // Toggle to display cell as 'point' instead of an ellipse
+  this.bkgcol = 128; // Background colour (greyscale)
+  this.seekWeight = 0.5; // Multiplier for 'seek target' behaviour
+  this.separateWeight = 2; // Multiplier for 'separate' behaviour
+  this.growthFactor = 1.1; // If >1 then spawned cell will be larger than parents
 }
 
 var initGUI = function () {

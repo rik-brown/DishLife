@@ -7,7 +7,7 @@ function Cell(pos, vel, cellStartSize_) {
   // GROWTH & REPRODUCTION
   this.age = 0; // Age is 'number of frames since birth'. A new cell always starts with age = 0.
   this.lifespan = p.lifespan * random (0.8, 1.2);
-  this.fertility = p.fertility * 0.01 * random (0.8, 1.2);
+  this.fertility = p.fertility * 0.01 * random (0.8, 1.0); // Fertility is a number between 0 and 1
   this.spawnCount = p.spawnCount; // How many times can the cell produce offspring?
 
   // SIZE AND SHAPE
@@ -34,11 +34,12 @@ function Cell(pos, vel, cellStartSize_) {
     this.updateSize(); // Cell grows
     this.updateFertility(); // Cell matures
     if (p.displayPoint) {this.displayPoint();} else {this.display();} // Cell is displayed
+    //this.cellDebugger();
   }
 
   this.live = function() {
-    this.age += 1;
-    this.maturity = map(this.age, 0, this.lifespan, 0, 1);
+    this.age += 1; // Age starts at 0 and increases by one for every drawcycle
+    this.maturity = map(this.age, 0, this.lifespan, 1, 0); // Maturity moves from 1 at spawn to 0 at death
   }
 
   this.seek = function(target) {
@@ -63,8 +64,8 @@ function Cell(pos, vel, cellStartSize_) {
     var separateForce = this.separate(cells);
     var seekForce = this.seek(this.target);
 
-    separateForce.mult(2); // Could be added to GUI
-    seekForce.mult(1); // Could be added to GUI
+    separateForce.mult(p.separateWeight);
+    seekForce.mult(p.seekWeight);
 
     this.applyForce(separateForce);
     this.applyForce(seekForce);
@@ -82,9 +83,9 @@ function Cell(pos, vel, cellStartSize_) {
       // if (this.fertile && cells[i].fertile) {desiredseparation = 0;}
       // if (!this.fertile && cells[i].fertile || this.fertile && !cells[i].fertile) {desiredseparation = this.r + cells[i].r;}
       // if (!this.fertile && !cells[i].fertile) {desiredseparation = (this.r + cells[i].r)*1.6;}
-      if (this.fertile && cells[i].fertile) {desiredseparation = p.sepFF;}
-      if (!this.fertile && cells[i].fertile || this.fertile && !cells[i].fertile) {desiredseparation = p.sepFI}
-      if (!this.fertile && !cells[i].fertile) {desiredseparation = p.sepII;}
+      if (this.fertile && cells[i].fertile) {desiredseparation = p.sepFF * 0.01 * (this.r + cells[i].r);}
+      if (!this.fertile && cells[i].fertile || this.fertile && !cells[i].fertile) {desiredseparation = p.sepFI * 0.01 * (this.r + cells[i].r);}
+      if (!this.fertile && !cells[i].fertile) {desiredseparation = p.sepII * 0.01 * (this.r + cells[i].r);}
       // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
       if ((d > 0) && (d < desiredseparation)) {
         // Calculate vector pointing away from neighbor
@@ -123,7 +124,7 @@ function Cell(pos, vel, cellStartSize_) {
   }
 
   this.updateFertility = function() {
-    if (this.maturity >= this.fertility) {this.fertile = true; } else {this.fertile = false; } // A cell is fertile if maturity is above fertility threhold
+    if (this.maturity <= this.fertility) {this.fertile = true; } else {this.fertile = false; } // A cell is fertile if maturity is above fertility threhold
     if (this.spawnCount == 0) {this.fertility = 0;} // Once spawnCount has counted down to zero, the cell will spawn no more
   }
 
@@ -146,24 +147,25 @@ function Cell(pos, vel, cellStartSize_) {
     translate(this.position.x, this.position.y);
     rotate(angle);
     if (this.fertile) {
-      fill(255, 0, 0); ellipse(0, 0, this.r, this.r * this.flatness);
-      fill(255); ellipse(0, 0, this.r * this.maturity, this.r * this.maturity * this.flatness);
+      fill(255, 0, 0); ellipse(0, 0, this.r, this.r * this.flatness); // Red ellipse at full size of cell
+      fill(255); ellipse(0, 0, this.r * (1-this.maturity), this.r * (1-this.maturity) * this.flatness); // White ellipse which grows from center
       }
     else {
-      fill(255); ellipse(0, 0, this.r, this.r * this.flatness);
-      fill(255, 0, 0); ellipse(0, 0, this.r * this.maturity, this.r * this.maturity * this.flatness);
+      fill(255); ellipse(0, 0, this.r, this.r * this.flatness); // White ellipse at full size of cell
+      fill(255, 0, 0); ellipse(0, 0, this.r * (1-this.maturity), this.r * (1-this.maturity) * this.flatness); // Red ellipse which grows from center
       }
-    strokeWeight(2);
+    strokeWeight(1);
     stroke(0);
     noFill();
-    ellipse(0, 0, this.r * this.fertility, this.r * this.fertility * this.flatness);
+    ellipse(0, 0, this.r * (1-this.fertility), this.r * (1-this.fertility) * this.flatness); // Fixed ellipse indicating 'fertility threshold'
     pop();
   }
 
   // Display the cell using ellipse
   this.displayPoint = function() {
     noFill();
-    if (this.fertile) {stroke(255, 0, 0, 15);} else {stroke(255, 15);}
+    strokeWeight(3);
+    if (this.fertile) {stroke(255, 0, 0, 40);} else {stroke(255, 40);}
     point(this.position.x, this.position.y);
   }
 
@@ -190,11 +192,41 @@ function Cell(pos, vel, cellStartSize_) {
     this.spawnVel.normalize(); // Normalize to leave just the direction and magnitude of 1 (will be multiplied later)
 
     // Call spawn method (in Colony) with the new parameters for position, velocity, colour & starting radius)
-    colony.spawn(this.spawnPos, this.spawnVel, this.r*random(1, 1.5));
+    colony.spawn(this.spawnPos, this.spawnVel, this.r*p.growthFactor);
 
     //Reset fertility counter
     this.fertility *= this.fertility;
     other.fertility *= other.fertility;
   }
+
+  this.cellDebugger = function() { // Displays cell parameters as text (for debug only)
+    var rowHeight = 15;
+    var xOffset = this.r;
+    fill(0);
+    textSize(rowHeight);
+    // RADIUS
+    //text("r:" + this.r, this.position.x, this.position.y + rowHeight*1);
+    //text("cellStartSize:" + this.cellStartSize, this.position.x, this.position.y + rowHeight*2);
+
+
+    // GROWTH
+    //text("size:" + this.size, this.position.x, this.position.y + rowHeight*0);
+    //text("growth:" + this.growth, this.position.x, this.position.y + rowHeight*5);
+    text("maturity:" + this.maturity, this.position.x + xOffset, this.position.y + rowHeight*0);
+    //text("lifespan:" + this.lifespan, this.position.x, this.position.y + rowHeight*0);
+    //text("age:" + this.age, this.position.x, this.position.y + rowHeight*3);
+    text("fertility:" + this.fertility, this.position.x + xOffset, this.position.y + rowHeight*1);
+    //text("fertile:" + this.fertile, this.position.x, this.position.y + rowHeight*3);
+    text("spawnCount:" + this.spawnCount, this.position.x + xOffset, this.position.y + rowHeight*2);
+
+    // MOVEMENT
+    //text("vel.x:" + this.velocity.x, this.position.x, this.position.y + rowHeight*4);
+    //text("vel.y:" + this.velocity.y, this.position.x, this.position.y + rowHeight*5);
+    //text("vel.heading():" + this.velocity.heading(), this.position.x, this.position.y + rowHeight*3);
+    //text("Noise%:" + p.noisePercent, this.position.x, this.position.y + rowHeight*1);
+    //text("screw amount:" + p.spiral, this.position.x, this.position.y + rowHeight*2);
+  }
+
+
 
 }

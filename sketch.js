@@ -2,11 +2,22 @@
  * Nature of Code
  * Assignment 3: Steering Forces
  * by Richard Brown
+ *
+ * WISHLIST:
+ * #1 It would be fun to see colour changing from blue (0,0,255) to red (255,0,0) as cell moves from infertile to fertile
+ * #3 The spacing ought to reflect some feature of the cell: radius, maturity, fertility etc. Maybe small cells should be further apart?
+ * #4 The weighting between 'seek center' and 'separate' ought to be configurable
+ * #5 The movement is kinda jerky
+ * #6 Some 'veiled trails' might be nice to look at
+ * #7 Points ought to be improved or removed (relates to #5)
+ * #8 Maybe the target should move? Could it be one of the cells? cells[0]? (this would change as the numbers are reshuffled upon deaths)
+ * #9 Idea: Instead of ellipse, render the cells as a Number (i) Or a text : "Foe" (infertile) & "Friend" (fertile)
  */
 
 var colony; // A colony object
 
 function setup() {
+  //frameRate(10);
   p = new Parameters();
   gui = new dat.GUI();
   gui.remember(p);
@@ -30,19 +41,22 @@ function populateColony() {
 }
 
 var Parameters = function () { //These are the initial values, not the randomised ones
-  this.colonySize = 2; // Max number of cells in the colony
+  this.colonySize = int(random(2,10)); // Max number of cells in the colony
   this.colonyMaxSize = 200; // The maximum number of cells allowed in the colony
-  this.cellStartSize = 20;
+  this.cellStartSize = 80;
   this.lifespan = 1000; // How long will the cell live?
-  this.fertility = 30; // When will the cell become fertile?
-  this.spawnCount = 1; // How many times can the cell produce offspring?
+  this.fertility = 80; // When will the cell become fertile?
+  this.spawnCount = 2; // How many times can the cell produce offspring?
   this.maxspeed = 4;
   this.maxforce = 0.3;
   this.sepFF = 0; // Separation for Fertile && Fertile
-  this.sepFI = 10; // Separation for Fertile && Infertile
-  this.sepII = 20; // Separation for Infertile && Infertile
+  this.sepFI = 100; // Separation for Fertile && Infertile
+  this.sepII = 200; // Separation for Infertile && Infertile
   this.displayPoint = false;
-  this.bkgcol = 0;
+  this.bkgcol = 128;
+  this.seekWeight = 0.5;
+  this.separateWeight = 2;
+  this.growthFactor = 1.3;
 }
 
 var initGUI = function () {
@@ -58,15 +72,21 @@ var initGUI = function () {
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'spawnCount', 0, 10).step(1).name('Max. # Children').listen();
       controller.onChange(function(value) {populateColony(); });
+    var controller = gui.add(p, 'growthFactor', 1, 2).step(1).name('Growth Factor').listen();
+      controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'maxspeed', 1, 10).step(1).name('Max. Speed').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'maxforce', 0.1, 1.0).name('Max. Force').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'sepFF', 0, 50).name('Sep. RedRed').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'sepFI', 0, 50).name('Sep. RedWhite').listen();
+    var controller = gui.add(p, 'sepFI', 0, 500).name('Sep. RedWhite').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'sepII', 0, 50).name('Sep. WhiteWhite').listen();
+    var controller = gui.add(p, 'sepII', 0, 500).name('Sep. WhiteWhite').listen();
+      controller.onChange(function(value) {populateColony(); });
+    var controller = gui.add(p, 'seekWeight', 0, 5).name('Seek Strength').listen();
+      controller.onChange(function(value) {populateColony(); });
+    var controller = gui.add(p, 'separateWeight', 0, 5).name('Sep. Strength').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'displayPoint').name('Point').listen();
       controller.onChange(function(value) {populateColony(); });

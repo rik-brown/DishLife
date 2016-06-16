@@ -26,9 +26,12 @@ function Colony(numCells) {
     for (var i = this.cells.length - 1; i >= 0; i--) {
 
       var c = this.cells[i]; // Get one cell at a time
-      c.run(i); // Run it (grow, move, spawn, check position vs boundaries etc.)
+      c.run(); // Run it (grow, move, spawn, check position vs boundaries etc.)
       c.applyBehaviors(this.cells);
       if (c.dead()) {this.cells.splice(i, 1);} // If cell has died, remove it from the array
+      if (p.displayMode == 1) {c.displayEllipse(i);}
+      if (p.displayMode == 2) {c.displayPoint(i);}
+      if (p.displayMode == 3) {c.displayText(i);}
 
       // Iteration to check collision between current cell(i) and the rest
       if (this.cells.length <= p.colonyMaxSize) { // Don't check for collisons if there are too many cells (wait until some die off)
@@ -39,7 +42,6 @@ function Colony(numCells) {
           }
         }
       }
-
     }
 
     // If there are too many cells, remove some by 'culling'
@@ -53,5 +55,4 @@ function Colony(numCells) {
     var cull = (this.cells.length / div);
     for (var i = cull; i >= 0; i--) { this.cells.splice(i,1); }
   }
-
 }

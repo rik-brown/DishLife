@@ -1,12 +1,11 @@
-/* Kadenze
- * Nature of Code
+/* Kadenze 'Nature of Code'
+ * p5.js course with Daniel Shiffman
  * Assignment 3: Steering Forces
+ * 'DishLife'
  * by Richard Brown
  *
- * WISHLIST:
- * #1 It would be fun to see colour changing from blue (0,0,255) to red (255,0,0) as cell moves from infertile to fertile
- * #8 Maybe the target should move? Could it be one of the cells? cells[0]? (this would change as the numbers are reshuffled upon deaths)
- * #9 Idea: Instead of ellipse, render the cells as a Number (i) Or a text : "Foe" (infertile) & "Friend" (fertile)
+ * FUTURE IDEAS:
+ * #1 The colour could gradually change from blue (0,0,255) to red (255,0,0) as cell moves from infertile to fertile
  */
 
 var colony; // A colony object
@@ -47,41 +46,41 @@ function trails() {
 }
 
 var Parameters = function () { //These are the initial values, not the randomised ones
-  this.colonySize = int(random(2,10)); // Max number of cells in the colony
+  this.bkgcol = 128; // Background colour (greyscale)
+  this.colonySize = int(random(2,20)); // Initial population of cells in the colony
   this.colonyMaxSize = 200; // The maximum number of cells allowed in the colony
-  this.cellStartSize = 80; // Starting radius
+  this.cellStartSize = random(50,100); // Starting cell radius
   this.lifespan = 1000; // How long will the cell live?
-  this.fertility = 80; // When will the cell become fertile?
-  this.spawnCount = 2; // How many times can the cell produce offspring?
+  this.fertility = 85; // When will the cell become fertile? (80 = when 80% of lifespan is remaining)
+  this.spawnCount = 3; // How many times can the cell produce offspring?
   this.maxspeed = 4;
   this.maxforce = 0.3;
   this.sepFF = 0; // Separation for Fertile && Fertile
   this.sepFI = 100; // Separation for Fertile && Infertile
   this.sepII = 200; // Separation for Infertile && Infertile
-  this.displayPoint = false; // Toggle to display cell as 'point' instead of an ellipse
-  this.displayText = false; // Toggle to display cell as text instead of an ellipse
-  this.trailMode = false; // Toggle to display trails
-  this.movingTarg = false; // Toggle between 'center' and cell[0].position
-  this.bkgcol = 128; // Background colour (greyscale)
+
   this.seekWeight = 0.5; // Multiplier for 'seek target' behaviour
   this.separateWeight = 2; // Multiplier for 'separate' behaviour
-  this.growthFactor = 1.1; // If >1 then spawned cell will be larger than parents
+  this.growthFactor = 1.1; // If >1 then spawned cell will be larger than parents r at conception
+  this.displayMode = 1; // 1=ellipse, 2=point, 3=text
+  this.trailMode = false; // Toggle to display trails
+  this.moveTarget = false; // Toggle between 'center' and cell[0].position
 }
 
 var initGUI = function () {
-		var controller = gui.add(p, 'colonySize', 1, 100).step(1).name('# Cells').listen();
+		var controller = gui.add(p, 'colonySize', 1, 100).step(1).name('#Cells (start)').listen();
 		  controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'colonyMaxSize', 50, 500).step(10).name('Max. # Cells').listen();
+    var controller = gui.add(p, 'colonyMaxSize', 50, 500).step(10).name('#Cells (Max.)').listen();
   	  controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'cellStartSize', 2, 200).step(1).name('Start size').listen();
+    var controller = gui.add(p, 'cellStartSize', 2, 200).step(1).name('Size').listen();
     	controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'lifespan', 500, 5000).step(1).name('Lifespan').listen();
     	controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'fertility', 0, 100).step(1).name('Fertility').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'spawnCount', 0, 10).step(1).name('Max. # Children').listen();
+    var controller = gui.add(p, 'spawnCount', 0, 10).step(1).name('#Children').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'growthFactor', 1, 2).step(1).name('Growth Factor').listen();
+    var controller = gui.add(p, 'growthFactor', 1, 2).name('Growth Factor').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'maxspeed', 1, 10).step(1).name('Max. Speed').listen();
       controller.onChange(function(value) {populateColony(); });
@@ -96,12 +95,8 @@ var initGUI = function () {
     var controller = gui.add(p, 'seekWeight', 0, 5).name('Seek Strength').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'separateWeight', 0, 5).name('Sep. Strength').listen();
-      controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'displayPoint').name('Point').listen();
-      controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'displayText').name('Text').listen();
+    var controller = gui.add(p, 'displayMode', { Ellipse: 1, Point: 2, Text: 3 } ); // COMPLETE THIS!
       controller.onChange(function(value) {populateColony(); });
     gui.add(p, 'trailMode').name('Trails');
-    gui.add(p, 'movingTarg').name('Follow #0');
-
+    gui.add(p, 'moveTarget').name('Follow #0');
 }

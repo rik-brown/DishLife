@@ -61,7 +61,7 @@ var Parameters = function () { //These are the initial values, not the randomise
 
   this.seekWeight = 0.5; // Multiplier for 'seek target' behaviour
   this.separateWeight = 2; // Multiplier for 'separate' behaviour
-  this.growthFactor = 1.1; // If >1 then spawned cell will be larger than parents r at conception
+  this.growthFactor = 1.3; // If >1 then spawned cell will be larger than parents r at conception
   this.displayMode = 1; // 1=ellipse, 2=point, 3=text
   this.trailMode = false; // Toggle to display trails
   this.moveTarget = false; // Toggle between 'center' and cell[0].position

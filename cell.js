@@ -27,14 +27,18 @@ function Cell(pos, vel, cellStartSize_) {
   //this.target = createVector(mouseX,mouseY); // colony moves towards the mouse
   this.target = createVector(width/2, height/2); // colony moves towards the center of the canvas
 
-
-  this.run = function() {
+  this.run = function(i) {
+    if (p.moveTarget) {this.updateMovingTarget();}
     this.live();  // Cell lives
     this.updatePosition(); // Cell moves
     this.updateSize(); // Cell grows
     this.updateFertility(); // Cell matures
-    if (p.displayPoint) {this.displayPoint();} else {this.display();} // Cell is displayed
-    //this.cellDebugger();
+  }
+
+  this.updateMovingTarget = function() {
+    this.movingTargetX = colony.cells[0].position.x;
+    this.movingTargetY = colony.cells[0].position.y;
+    this.movingTarget = createVector(this.movingTargetX, this.movingTargetY); // The target is always 'cell[0]'
   }
 
   this.live = function() {
@@ -42,27 +46,44 @@ function Cell(pos, vel, cellStartSize_) {
     this.maturity = map(this.age, 0, this.lifespan, 1, 0); // Maturity moves from 1 at spawn to 0 at death
   }
 
+  this.updatePosition = function() {
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(this.maxspeed);
+    this.position.add(this.velocity);
+    this.acceleration.mult(0);
+  }
+
+  this.updateSize = function() {
+    this.r -= this.growth;
+    this.size = map(this.r, this.cellStartSize, this.cellEndSize, 1, 0);
+  }
+
+  this.updateFertility = function() {
+    if (this.maturity <= this.fertility) {this.fertile = true; } else {this.fertile = false; } // A cell is fertile if maturity is above fertility threhold
+    if (this.spawnCount == 0) {this.fertility = 0;} // Once spawnCount has counted down to zero, the cell will spawn no more
+  }
+
   this.seek = function(target) {
-      var desired = p5.Vector.sub(this.target, this.position);
+    var desired = p5.Vector.sub(target, this.position);
 
-      // Normalize desired and scale to maximum speed
-      desired.normalize();
-      desired.mult(this.maxspeed);
+    // Normalize desired and scale to maximum speed
+    desired.normalize();
+    desired.mult(this.maxspeed);
 
-      // Steering formula
-      var steering = p5.Vector.sub(desired, this.velocity);
-      steering.limit(this.maxforce);
-      return(steering);
-    }
+    // Steering formula
+    var steering = p5.Vector.sub(desired, this.velocity);
+    steering.limit(this.maxforce);
+    return(steering);
+  }
 
 
   this.applyForce = function(force) {
-      this.acceleration.add(force);
-    }
+    this.acceleration.add(force);
+  }
 
   this.applyBehaviors = function(cells) {
     var separateForce = this.separate(cells);
-    var seekForce = this.seek(this.target);
+    if (!p.moveTarget) {var seekForce = this.seek(this.target);}  else {var seekForce = this.seek(this.movingTarget);}
 
     separateForce.mult(p.separateWeight);
     seekForce.mult(p.seekWeight);
@@ -74,7 +95,6 @@ function Cell(pos, vel, cellStartSize_) {
 // Separation
   // Method checks for nearby vehicles and steers away
   this.separate = function(cells) {
-
     var sum = createVector();
     var count = 0;
     // For every cell in the system, check if it's too close
@@ -109,26 +129,6 @@ function Cell(pos, vel, cellStartSize_) {
     return sum;
   }
 
-
-
-  this.updatePosition = function() {
-    this.velocity.add(this.acceleration);
-    this.velocity.limit(this.maxspeed);
-    this.position.add(this.velocity);
-    this.acceleration.mult(0);
-  }
-
-  this.updateSize = function() {
-    this.r -= this.growth;
-    this.size = map(this.r, this.cellStartSize, this.cellEndSize, 1, 0);
-  }
-
-  this.updateFertility = function() {
-    if (this.maturity <= this.fertility) {this.fertile = true; } else {this.fertile = false; } // A cell is fertile if maturity is above fertility threhold
-    if (this.spawnCount == 0) {this.fertility = 0;} // Once spawnCount has counted down to zero, the cell will spawn no more
-  }
-
-
   // Death
   this.dead = function() {
     if (this.size <= 0) {return true;} // Size = 0 when r = cellEndSize
@@ -139,7 +139,7 @@ function Cell(pos, vel, cellStartSize_) {
   };
 
   // Display the cell using ellipse
-  this.display = function() {
+  this.displayEllipse = function(i) {
     noStroke();
     fill(255);
     var angle = this.velocity.heading();
@@ -154,19 +154,28 @@ function Cell(pos, vel, cellStartSize_) {
       fill(255); ellipse(0, 0, this.r, this.r * this.flatness); // White ellipse at full size of cell
       fill(255, 0, 0); ellipse(0, 0, this.r * (1-this.maturity), this.r * (1-this.maturity) * this.flatness); // Red ellipse which grows from center
       }
-    strokeWeight(1);
-    stroke(0);
-    noFill();
-    ellipse(0, 0, this.r * (1-this.fertility), this.r * (1-this.fertility) * this.flatness); // Fixed ellipse indicating 'fertility threshold'
+    if (this.spawnCount >0) {
+      strokeWeight(1);
+      stroke(p.bkgcol);
+      noFill();
+      ellipse(0, 0, this.r * (1-this.fertility), this.r * (1-this.fertility) * this.flatness); // Fixed ellipse indicating 'fertility threshold'
+    }
     pop();
   }
 
-  // Display the cell using ellipse
-  this.displayPoint = function() {
+  // Display the cell using points
+  this.displayPoint = function(i) {
     noFill();
-    strokeWeight(3);
-    if (this.fertile) {stroke(255, 0, 0, 40);} else {stroke(255, 40);}
+    strokeWeight(5);
+    if (this.fertile) {stroke(255, 0, 0, 128);} else {stroke(255, 128);}
     point(this.position.x, this.position.y);
+  }
+
+  // Display the cell using text
+  this.displayText = function(i) {
+    noStroke();
+    textSize(this.r);
+    if (this.fertile) {fill(255, 0, 0); text("Friend#" + i, this.position.x, this.position.y);} else {fill(255); text("Foe#" + i, this.position.x, this.position.y);}
   }
 
   this.checkCollision = function(other) { // Method receives a Cell object 'other' to get the required info about the collidee
@@ -198,35 +207,5 @@ function Cell(pos, vel, cellStartSize_) {
     this.fertility *= this.fertility;
     other.fertility *= other.fertility;
   }
-
-  this.cellDebugger = function() { // Displays cell parameters as text (for debug only)
-    var rowHeight = 15;
-    var xOffset = this.r;
-    fill(0);
-    textSize(rowHeight);
-    // RADIUS
-    //text("r:" + this.r, this.position.x, this.position.y + rowHeight*1);
-    //text("cellStartSize:" + this.cellStartSize, this.position.x, this.position.y + rowHeight*2);
-
-
-    // GROWTH
-    //text("size:" + this.size, this.position.x, this.position.y + rowHeight*0);
-    //text("growth:" + this.growth, this.position.x, this.position.y + rowHeight*5);
-    text("maturity:" + this.maturity, this.position.x + xOffset, this.position.y + rowHeight*0);
-    //text("lifespan:" + this.lifespan, this.position.x, this.position.y + rowHeight*0);
-    //text("age:" + this.age, this.position.x, this.position.y + rowHeight*3);
-    text("fertility:" + this.fertility, this.position.x + xOffset, this.position.y + rowHeight*1);
-    //text("fertile:" + this.fertile, this.position.x, this.position.y + rowHeight*3);
-    text("spawnCount:" + this.spawnCount, this.position.x + xOffset, this.position.y + rowHeight*2);
-
-    // MOVEMENT
-    //text("vel.x:" + this.velocity.x, this.position.x, this.position.y + rowHeight*4);
-    //text("vel.y:" + this.velocity.y, this.position.x, this.position.y + rowHeight*5);
-    //text("vel.heading():" + this.velocity.heading(), this.position.x, this.position.y + rowHeight*3);
-    //text("Noise%:" + p.noisePercent, this.position.x, this.position.y + rowHeight*1);
-    //text("screw amount:" + p.spiral, this.position.x, this.position.y + rowHeight*2);
-  }
-
-
 
 }

@@ -67,8 +67,8 @@ var Parameters = function () { //These are the initial values, not the randomise
 }
 
 var initGUI = function () {
-		var controller = gui.add(p, 'colonySize', 1, 100).step(1).name('#Cells (start)').listen();
-		  controller.onChange(function(value) {populateColony(); });
+var controller = gui.add(p, 'colonySize', 1, 200).step(1).name('#Cells (start)').listen();
+  controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'colonyMaxSize', 50, 500).step(10).name('#Cells (Max.)').listen();
   	  controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'cellStartSize', 2, 200).step(1).name('Size').listen();

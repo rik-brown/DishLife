@@ -5,13 +5,12 @@
  * by Richard Brown
  *
  * FUTURE IDEAS:
- * #1 The colour could gradually change from blue (0,0,255) to red (255,0,0) as cell moves from infertile to fertile
+ * -none at the present-
  */
 
 var colony; // A colony object
 
 function setup() {
-  //frameRate(10);
   p = new Parameters();
   gui = new dat.GUI();
   gui.remember(p);
@@ -95,7 +94,7 @@ var initGUI = function () {
     var controller = gui.add(p, 'seekWeight', 0, 5).name('Seek Strength').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'separateWeight', 0, 5).name('Sep. Strength').listen();
-    var controller = gui.add(p, 'displayMode', { Ellipse: 1, Point: 2, Text: 3 } ); // COMPLETE THIS!
+    var controller = gui.add(p, 'displayMode', { Ellipse: 1, Point: 2, Text: 3, HotCold: 4 } );
       controller.onChange(function(value) {populateColony(); });
     gui.add(p, 'trailMode').name('Trails');
     gui.add(p, 'moveTarget').name('Follow #0');

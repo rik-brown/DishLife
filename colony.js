@@ -29,9 +29,10 @@ function Colony(numCells) {
       c.run(); // Run it (grow, move, spawn, check position vs boundaries etc.)
       c.applyBehaviors(this.cells);
       if (c.dead()) {this.cells.splice(i, 1);} // If cell has died, remove it from the array
-      if (p.displayMode == 1) {c.displayEllipse(i);}
-      if (p.displayMode == 2) {c.displayPoint(i);}
+      if (p.displayMode == 1) {c.displayEllipse();}
+      if (p.displayMode == 2) {c.displayPoint();}
       if (p.displayMode == 3) {c.displayText(i);}
+      if (p.displayMode == 4) {c.displayEllipseHotCold();}
 
       // Iteration to check collision between current cell(i) and the rest
       if (this.cells.length <= p.colonyMaxSize) { // Don't check for collisons if there are too many cells (wait until some die off)

@@ -139,7 +139,7 @@ function Cell(pos, vel, cellStartSize_) {
   };
 
   // Display the cell using ellipse
-  this.displayEllipse = function(i) {
+  this.displayEllipse = function() {
     noStroke();
     fill(255);
     var angle = this.velocity.heading();
@@ -163,8 +163,29 @@ function Cell(pos, vel, cellStartSize_) {
     pop();
   }
 
+  // Display the cell using a colourshifting ellipse (blue = cold, red = warm)
+  this.displayEllipseHotCold = function() {
+    noStroke();
+    var angle = this.velocity.heading();
+    var blue = map(this.maturity, 1, this.fertility, 255, 0);
+    var ripeness = map(this.maturity, 1, this.fertility, 0, this.r);
+    var red = 255 - blue;
+    push();
+    translate(this.position.x, this.position.y);
+    rotate(angle);
+    fill(red, 0, blue); ellipse(0, 0, this.r, this.r * this.flatness); // Red ellipse at full size of cell
+    // if (this.spawnCount >0) {
+    //   strokeWeight(1);
+    //   stroke(255);
+    //   noFill();
+    //   ellipse(0, 0, ripeness, ripeness * this.flatness); // Fixed ellipse indicating 'fertility threshold'
+    // }
+    pop();
+  }
+
+
   // Display the cell using points
-  this.displayPoint = function(i) {
+  this.displayPoint = function() {
     noFill();
     strokeWeight(5);
     if (this.fertile) {stroke(255, 0, 0, 128);} else {stroke(255, 128);}

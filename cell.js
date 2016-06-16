@@ -15,7 +15,7 @@ function Cell(pos, vel, cellStartSize_) {
   this.cellEndSize = 0.5;
   this.r = this.cellStartSize; // Initial value for radius
   this.size = map(this.r, this.cellStartSize, this.cellEndSize, 1, 0); // Size is a measure of progress from starting to final radius
-  this.flatness = random (1.0, 1.3); // Flatness makes the circle into an ellipse
+  this.flatness = random (0.6, 1.4); // Flatness makes the circle into an ellipse
   this.growth = (this.cellStartSize-this.cellEndSize)/this.lifespan; // Growth-rate is calculated from size & expected lifespan
 
   // MOVEMENT

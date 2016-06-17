@@ -22,8 +22,8 @@ function setup() {
 }
 
 function draw() {
-  if (!p.displayPoint && !p.trailMode) {background(p.bkgcol);}
-  if (p.trailMode) {trails();}
+  if (p.trailMode == 0) {background(p.bkgcol);}
+  if (p.trailMode == 1) {trails();}
   colony.run(); // Run the colony
   if (colony.cells.length === 0) {populateColony(); } // If all the cells have died, populate a new colony
 }
@@ -62,20 +62,20 @@ var Parameters = function () { //These are the initial values, not the randomise
   this.separateWeight = 2; // Multiplier for 'separate' behaviour
   this.growthFactor = 1.3; // If >1 then spawned cell will be larger than parents r at conception
   this.displayMode = 1; // 1=ellipse, 2=point, 3=text
-  this.trailMode = false; // Toggle to display trails
+  this.trailMode = 1; // 1=none, 2 = blend, 3 = continuous
   this.moveTarget = false; // Toggle between 'center' and cell[0].position
 }
 
 var initGUI = function () {
-var controller = gui.add(p, 'colonySize', 1, 200).step(1).name('#Cells (start)').listen();
-  controller.onChange(function(value) {populateColony(); });
+		var controller = gui.add(p, 'colonySize', 1, 100).step(1).name('#Cells (start)').listen();
+		  controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'colonyMaxSize', 50, 500).step(10).name('#Cells (Max.)').listen();
   	  controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'cellStartSize', 2, 200).step(1).name('Size').listen();
     	controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'lifespan', 500, 5000).step(1).name('Lifespan').listen();
     	controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'fertility', 0, 100).step(1).name('Fertility%').listen();
+    var controller = gui.add(p, 'fertility', 0, 100).step(1).name('Fertility').listen();
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'spawnCount', 0, 10).step(1).name('#Children').listen();
       controller.onChange(function(value) {populateColony(); });
@@ -85,17 +85,17 @@ var controller = gui.add(p, 'colonySize', 1, 200).step(1).name('#Cells (start)')
       controller.onChange(function(value) {populateColony(); });
     var controller = gui.add(p, 'maxforce', 0.1, 1.0).name('Max. Force').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'sepFF', 0, 50).name('Red<->Red').listen();
+    var controller = gui.add(p, 'sepFF', 0, 50).name('Sep. RedRed').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'sepFI', 0, 500).name('Red<->White').listen();
+    var controller = gui.add(p, 'sepFI', 0, 500).name('Sep. RedWhite').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'sepII', 0, 500).name('White<->White').listen();
+    var controller = gui.add(p, 'sepII', 0, 500).name('Sep. WhiteWhite').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'seekWeight', 0, 5).name('-> Strength').listen();
+    var controller = gui.add(p, 'seekWeight', 0, 5).name('Seek Strength').listen();
       controller.onChange(function(value) {populateColony(); });
-    var controller = gui.add(p, 'separateWeight', 0, 5).name('<-> Strength').listen();
-    var controller = gui.add(p, 'displayMode', { Ellipse: 1, Point: 2, Text: 3, HotCold: 4 }).name('Display Mode');
+    var controller = gui.add(p, 'separateWeight', 0, 5).name('Sep. Strength').listen();
+    var controller = gui.add(p, 'displayMode', { Ellipse: 1, Point: 2, Text: 3, HotCold: 4 } );
       controller.onChange(function(value) {populateColony(); });
-    gui.add(p, 'trailMode').name('Trails');
+    gui.add(p, 'trailMode', { None: 1, Blend: 2, Continuous: 3} );
     gui.add(p, 'moveTarget').name('Follow #0');
 }
